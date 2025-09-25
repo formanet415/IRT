@@ -64,7 +64,7 @@ void uniform_bz()
         {
             particle.position[0] -= layout->dom_size(Direction::X);
         }
-        else if (iCell < layout->dual_dom_end(Direction::X))
+        else if (iCell < layout->dual_dom_start(Direction::X))
         {
             particle.position[0] += layout->dom_size(Direction::X);
         }
@@ -113,7 +113,7 @@ void drift_ey()
          ++ix)
     {
         B.z(ix) = 8.;  // Uniform magnetic field in z-direction
-        E.y(ix) = 1.0; // Uniform magnetic field in z-direction
+        E.y(ix) = 1.0; // Uniform electric field in y-direction
     }
 
 
