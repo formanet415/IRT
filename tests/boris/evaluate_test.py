@@ -60,7 +60,6 @@ def evaluate_test(filename, xideal = 5.05, videal = (0., 2., 0.), no_plot = Fals
             os.makedirs(os.path.join(dir,'IRT/plots/'))
         
         figname = filename.split('/')[-1].replace('.h5', '.png')
-        print(figname)
         plt.savefig(os.path.join(dir,'IRT/plots/',figname))
         plt.close()
 
