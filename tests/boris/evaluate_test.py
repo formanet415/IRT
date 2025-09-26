@@ -66,7 +66,7 @@ def evaluate_test(filename, xideal = 5.05, videal = (0., 2., 0.), no_plot = Fals
 # Call the function for each file
 # uniform field - test particle completes two cycles and returns to its initial state 
 test_subdir = 'build/tests/boris'
-evaluate_test(os.path.join(dir, test_subdir, 'uniform_bz.h5'), 5.0, (0., 2., 0.), no_plot=False)
+evaluate_test(os.path.join(dir, test_subdir, 'uniform_bz.h5'), 5.05, (0., 2., 0.), no_plot=False)
 # E x B drift: pos_end = pos_ini + time * E/B (if it is a multiple of gyrocycles, which it is.)
 evaluate_test(os.path.join(dir, test_subdir, 'drift_ey.h5'), 6.620796, (0., 1., 0.), no_plot=False)
 
