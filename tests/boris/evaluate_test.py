@@ -1,7 +1,9 @@
 import numpy as np
 import h5py
 import matplotlib.pyplot as plt
+import os
 
+dir = '/Users/formanet/github/MCHPC/'
 
 def evaluate_test(filename, xideal = 5.05, videal = (0., 2., 0.), no_plot = False):
     uniform_bz = h5py.File(filename) 
@@ -53,11 +55,19 @@ def evaluate_test(filename, xideal = 5.05, videal = (0., 2., 0.), no_plot = Fals
         ax2.grid(True)
 
         plt.tight_layout()
-        plt.show()
+        # save Figure 
+        if not os.path.exists(os.path.join(dir,'IRT/plots/')):
+            os.makedirs(os.path.join(dir,'IRT/plots/'))
+        
+        figname = filename.split('/')[-1].replace('.h5', '.png')
+        print(figname)
+        plt.savefig(os.path.join(dir,'IRT/plots/',figname))
+        plt.close()
 
 # Call the function for each file
 # uniform field - test particle completes two cycles and returns to its initial state 
-evaluate_test("/Users/formanet/github/MCHPC/build/tests/boris/uniform_bz.h5", 5.05, (0., 2., 0.), no_plot=True)
+test_subdir = 'build/tests/boris'
+evaluate_test(os.path.join(dir, test_subdir, 'uniform_bz.h5'), 5.0, (0., 2., 0.), no_plot=False)
 # E x B drift: pos_end = pos_ini + time * E/B (if it is a multiple of gyrocycles, which it is.)
-evaluate_test("/Users/formanet/github/MCHPC/build/tests/boris/drift_ey.h5", 6.620796, (0., 1., 0.), no_plot=True)
+evaluate_test(os.path.join(dir, test_subdir, 'drift_ey.h5'), 6.620796, (0., 1., 0.), no_plot=False)
 
