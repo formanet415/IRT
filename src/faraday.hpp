@@ -20,7 +20,7 @@ public:
             throw std::runtime_error("GridLayout is null");
     }
 
-    void operator()(VecField<dimension> const& E, VecField<dimension>& B)
+    void operator()(VecField<dimension> const& E, VecField<dimension> const& B, VecField<dimension>& Bnew)
     {
         auto const dx = m_grid->cell_size(Direction::X);
         auto const dt = m_grid->time_step();
@@ -30,9 +30,9 @@ public:
             // We calculate the change in B: \frac{\partial B}{\partial t} = -\nabla \times \E
             for (auto ix = m_grid->primal_dom_start(Direction::X); ix <= m_grid->primal_dom_end(Direction::X)-1; ++ix)
             {
-                // Bx will remain unchanged since dBy/dz and dBz/dy are zero in 1D
-                B.y(ix) +=  (E.z(ix+1) - E.z(ix))/dx * dt; // dEz/dx 
-                B.z(ix) -=  (E.y(ix+1) - E.y(ix))/dx * dt; // -dEy/dx
+                Bnew.x(ix) = B.x(ix); // in 1D, Bx is constant
+                Bnew.y(ix) = B.y(ix) + (E.z(ix+1) - E.z(ix))/dx * dt; // dEz/dx 
+                Bnew.z(ix) = B.z(ix) - (E.y(ix+1) - E.y(ix))/dx * dt; // -dEy/dx
             }
         }
         else
