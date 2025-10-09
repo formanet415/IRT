@@ -42,9 +42,49 @@ def evaluate_ampere(filename):
     plt.show()
 
 
+def evaluate_faraday(filename):
+    fields = h5py.File(filename)
+
+    x = fields["x"][:]
+    ey = fields["ey"][:]
+    bz = fields["bz"][:]
+
+    fields.close()
+
+    # --- analytic prediction ---
+    x_start = x[0]
+    x_end   = x[-1]
+    L = x_end - x_start
+    bz_pred = -0.0628*0.05*np.cos(2*np.pi*(x - x_start)/L)
+
+    # --- plotting ---
+    fig, axs = plt.subplots(2, 1, figsize=(10,8), sharex=True)
+
+    ax1, ax2 = axs
+    ax1.plot(x, ey, color='blue', linewidth=2)
+    ax1.set_ylabel(r'$E_y$')
+    ax1.set_title('Result of Faraday test')
+    ax1.grid(True)
+
+    ax2.plot(x, bz, color='red', label='Numerical $B_z$')
+    ax2.plot(x, bz_pred, color='black', linestyle='--', label='Analytic $B_z$')
+    ax2.set_xlabel(r'$x$')
+    ax2.set_ylabel(r'$B_z$')
+    ax2.legend()
+    ax2.grid(True)
+
+    plt.tight_layout()
+    if not os.path.exists(os.path.join(dir,'IRT/plots/')):
+        os.makedirs(os.path.join(dir,'IRT/plots/'))
+    plt.savefig(os.path.join(dir,'IRT/plots/faraday_test.png'))
+    plt.show()
+
+
+
 def run_test():
     test_subdir = 'build/tests/ampere_faraday'
     evaluate_ampere(os.path.join(dir, test_subdir, 'sin_bz.h5'))
+    evaluate_faraday(os.path.join(dir, test_subdir, 'sin_ey.h5'))
     
 
 if __name__ == "__main__":
