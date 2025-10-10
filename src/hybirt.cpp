@@ -129,6 +129,7 @@ int main()
     Ampere<dimension> ampere{layout};
     Ohm<dimension> ohm{layout};
     Boris<dimension> push{layout, dt};
+    Faraday<dimension> faraday{layout, dt};
 
 
 
@@ -154,6 +155,43 @@ int main()
         std::cout << "Time: " << time << " / " << final_time << "\n";
 
         // TODO implement ICN temporal integration
+        // Bp1np1 
+        auto Bp1np1 = B;
+       
+        faraday(E, B, Bp1np1);
+        // Ep1np1
+        auto Ep1np1 = E;
+        ohm(Bp1np1, J, N, V, Ep1np1);
+        
+        auto Bavg1 = B;
+        auto Eavg1 = E;
+        
+        average(B, Bp1np1, Bavg1);
+        average(E, Ep1np1, Eavg1);
+
+        // evolve position by 1/2 time step (position and velocity done by the pusher - by 1/2 dt)
+        for (auto& population : populations)
+        {
+            push(population.particles(), Eavg1, Bavg1);
+        }
+        //boundary_condition->particles(population.particles());
+        
+        //for (auto& population : populations)
+        //{
+        //    pop.deposit();
+        /*    boundary_condition->fill(population.flux());
+            boundary_condition->fill(population.density());
+        }
+
+        total_density(populations, N);
+        bulk_velocity<dimension>(populations, N, V);
+
+        // prediction 2 
+
+        ampere(Bp1np1, J);
+
+
+        */
 
 
         time += dt;
