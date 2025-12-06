@@ -28,6 +28,7 @@ template<std::size_t dimension>
 void average(Field<dimension> const& F1, Field<dimension> const& F2, Field<dimension>& Favg)
 {
     // use std::transform to do an average of F1 and F2
+    std::transform(F1.begin(), F1.end(), F2.begin(), Favg.begin(), [](double a, double b) { return 0.5 * (a + b); }); 
 }
 
 
@@ -125,13 +126,12 @@ int main()
     magnetic_init(B, *layout);
     boundary_condition->fill(B);
 
-    // Faraday<dimension> faraday{layout, dt};  // TODO uncomment when Faraday is implemented
     Ampere<dimension> ampere{layout};
     Ohm<dimension> ohm{layout};
     Boris<dimension> push{layout, dt};
     Faraday<dimension> faraday{layout, dt};
 
-
+    // prediction 1
 
     ampere(B, J);
     boundary_condition->fill(J);
@@ -159,9 +159,11 @@ int main()
         auto Bp1np1 = B;
        
         faraday(E, B, Bp1np1);
+        boundary_condition->fill(Bp1np1);
         // Ep1np1
         auto Ep1np1 = E;
         ohm(Bp1np1, J, N, V, Ep1np1);
+        boundary_condition->fill(Ep1np1);
         
         auto Bavg1 = B;
         auto Eavg1 = E;
@@ -173,13 +175,13 @@ int main()
         for (auto& population : populations)
         {
             push(population.particles(), Eavg1, Bavg1);
+            boundary_condition->particles(population.particles());
         }
-        //boundary_condition->particles(population.particles());
         
-        //for (auto& population : populations)
-        //{
-        //    pop.deposit();
-        /*    boundary_condition->fill(population.flux());
+        for (auto& population : populations)
+        {
+            population.deposit();
+            boundary_condition->fill(population.flux());
             boundary_condition->fill(population.density());
         }
 
@@ -188,16 +190,54 @@ int main()
 
         // prediction 2 
 
-        ampere(Bp1np1, J);
+        auto Bp2np1 = Bp1np1;
+        faraday(B, Eavg1, Bp2np1);
+        boundary_condition->fill(Bp2np1);
 
+        auto Ep2np1 = Ep1np1;
+        ampere(Bp2np1, J);
+        boundary_condition->fill(J);
+        ohm(Bp2np1, J, N, V, Ep2np1);
+        boundary_condition->fill(Ep2np1);
 
-        */
+        auto Bavg2 = B;
+        auto Eavg2 = E;
+        average(B, Bp2np1, Bavg2);
+        average(E, Ep2np1, Eavg2);
 
+        // evolve position by the second 1/2 time step 
+        for (auto& population : populations)
+        {
+            push(population.particles(), Eavg2, Bavg2);
+            boundary_condition->particles(population.particles());
+        }
+
+        for (auto& population : populations)
+        {
+            population.deposit();
+            boundary_condition->fill(population.flux());
+            boundary_condition->fill(population.density());
+        }
+
+        total_density(populations, N);
+        bulk_velocity<dimension>(populations, N, V);
+
+        // Correction
+
+        faraday(Eavg2, Bavg2, Bnew);
+        boundary_condition->fill(Bnew);
+        ampere(Bnew, J);
+        boundary_condition->fill(J);
+        ohm(Bnew, J, N, V, Enew);
+        boundary_condition->fill(Enew);
+
+        B = Bnew;
+        E = Enew;
 
         time += dt;
         diags_write_fields(B, E, V, N, time);
         std::cout << "**********************************\n";
-        // diags_write_particles(populations, time);
+        diags_write_particles(populations, time);
     }
 
 
